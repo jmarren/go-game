@@ -1,0 +1,29 @@
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.exe.manifest
+*.exe.config
+cmd/tmp/main
+
+# Logs
+*.log
+tmp/*.log
+
+# Dependency directories
+vendor/
+
+# Go modules
+go.sum
+
+# IDE/editor specific files
+.vscode/
+.idea/
+*.iml
+
+# OS generated files
+.DS_Store
+Thumbs.db
