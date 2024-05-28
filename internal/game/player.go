@@ -23,6 +23,9 @@ const (
 	idle PlayerState = iota
 	kick1
 	kick2
+	stride1
+	stride2
+	jump
 )
 
 type Player struct {
@@ -48,13 +51,12 @@ func (p *Player) SetOrientation(o Orientation) error {
 	return nil
 }
 
-func (p *Player) SetState(s PlayerState) error {
-	if s > 2 || s < 0 {
-		log.Fatal("Invalid state")
-		return errors.New("Invalid state")
-	}
+func (p *Player) SetState(s PlayerState) {
+	// if s > 2 || s < 0 {
+	// 	log.Fatal("Invalid state")
+	// 	return errors.New("Invalid state")
+	// }
 	p.state = s
-	return nil
 }
 
 func NewPlayer(frameFiles []string) (*Player, error) {
@@ -70,18 +72,22 @@ func NewPlayer(frameFiles []string) (*Player, error) {
 	// Load images for each state and orientation
 	images := map[Orientation]map[PlayerState][]string{
 		left: {
-			idle:  {"../../assets/OldMan-facing-left.png"},
-			kick1: {"../../assets/OldMan-kick-left-1.png"},
-			kick2: {"../../assets/OldMan-kick-left-2.png"},
+			idle:    {"../../assets/OldMan-facing-left.png"},
+			kick1:   {"../../assets/OldMan-kick-left-1.png"},
+			kick2:   {"../../assets/OldMan-kick-left-2.png"},
+			stride1: {"../../assets/OldMan-stride-left-1.png"},
+			stride2: {"../../assets/OldMan-stride-left-2.png"},
 		},
 		right: {
-			idle:  {"../../assets/OldMan-facing-right.png"},
-			kick1: {"../../assets/OldMan-kick-right-1.png"},
-			kick2: {"../../assets/OldMan-kick-right-2.png"},
+			idle:    {"../../assets/OldMan-facing-right.png"},
+			kick1:   {"../../assets/OldMan-kick-right-1.png"},
+			kick2:   {"../../assets/OldMan-kick-right-2.png"},
+			stride1: {"../../assets/OldMan-stride-right-1.png"},
+			stride2: {"../../assets/OldMan-stride-right-2.png"},
 		},
-		// center: {
-		// 	idle: {"../../assets/OldMan-center.png"},
-		// },
+		center: {
+			jump: {"../../assets/OldMan-center-jump.png"},
+		},
 	}
 
 	// Load images into frames map
@@ -108,29 +114,64 @@ func NewPlayer(frameFiles []string) (*Player, error) {
 		speed:         4,
 		stateTimer:    time.Now(),
 		stateDuration: map[PlayerState]time.Duration{
-			idle:  1 * time.Second,        // Duration for idle state
-			kick1: 500 * time.Millisecond, // Duration for kick1 state
-			kick2: 500 * time.Millisecond, // Duration for kick2 state
+			idle:    1 * time.Second,        // Duration for idle state
+			kick1:   500 * time.Millisecond, // Duration for kick1 state
+			kick2:   500 * time.Millisecond, // Duration for kick2 state
+			stride1: 100 * time.Millisecond, // Duration for stride1 state
+			stride2: 100 * time.Millisecond, // Duration for stride2 state
+			jump:    100 * time.Millisecond, // Duration for jump state
 		},
 	}, nil
 }
 
+func (p *Player) Walk() {
+	if p.state == idle || p.state == jump {
+		p.stateTimer = time.Now()
+		p.SetState(stride1)
+	} else if p.state == stride1 && time.Since(p.stateTimer) > p.stateDuration[stride1] {
+		p.stateTimer = time.Now()
+		p.SetState(stride2)
+	} else if p.state == stride2 && time.Since(p.stateTimer) > p.stateDuration[stride1] {
+		p.stateTimer = time.Now()
+		p.SetState(stride1)
+	}
+}
+
 func (p *Player) Update() {
+	if p.state == jump {
+		if time.Since(p.stateTimer) > p.stateDuration[jump]/2 {
+			p.Y += p.speed
+		}
+		if time.Since(p.stateTimer) > p.stateDuration[jump] {
+			p.SetState(idle)
+			err := p.SetOrientation(left)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	}
+
 	if ebiten.IsKeyPressed(ebiten.KeyD) {
 		err := p.SetOrientation(right)
+		p.Walk()
 		if err != nil {
 			log.Fatal(err)
 		}
 		p.X += p.speed
 	}
+
 	if ebiten.IsKeyPressed(ebiten.KeyA) {
 		err := p.SetOrientation(left)
+		p.Walk()
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		p.X -= p.speed
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyW) {
+		p.state = jump
+		p.orientation = center
 		p.Y -= p.speed
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyS) {
@@ -138,25 +179,16 @@ func (p *Player) Update() {
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeySpace) {
-		err := p.SetState(kick1)
-		if err != nil {
-			log.Fatal(err)
-		}
+		p.SetState(kick1)
 	}
 
 	// Handle state transitions based on state timer
 	if time.Since(p.stateTimer) > p.stateDuration[p.state] {
 		switch p.state {
 		case kick1:
-			err := p.SetState(kick2)
-			if err != nil {
-				log.Fatal(err)
-			}
+			p.SetState(kick2)
 		case kick2:
-			err := p.SetState(idle)
-			if err != nil {
-				log.Fatal(err)
-			}
+			p.SetState(idle)
 		}
 	}
 
