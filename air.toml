@@ -1,0 +1,20 @@
+# Config file for Air
+
+root = "./cmd/mygame"
+
+
+# [build]
+# cmd = "go build -o ./tmp/main ./cmd/mygame/main.go"
+# bin = "./tmp/main"
+# full_bin = "./tmp/main"
+# args_bin = []
+# # exclude_dir = ["assets", "cmd/mygame/tmp"]
+# # include_ext = ["go", "cmd/mygame/tmpl", "html"]
+#
+# [run]
+# cmd = "./tmp/main"
+# watch_dir = ["."]
+# # exclude_dir = ["assets", "cmd/mygame/tmp"]
+# # include_ext = ["go", "cmd/mygame/tmpl", "html"]
+# # exclude_ext = ["cmd/mygame/tmp"]
+# delay = 1000
