@@ -25,28 +25,6 @@ const (
 	kick2
 )
 
-// type leftFrames struct {
-// 	idle  *ebiten.Image
-// 	kick1 *ebiten.Image
-// 	kick2 *ebiten.Image
-// }
-//
-// type rightFrames struct {
-// 	idle  *ebiten.Image
-// 	kick1 *ebiten.Image
-// 	kick2 *ebiten.Image
-// }
-//
-// type centerFrames struct {
-// 	idle *ebiten.Image
-// }
-//
-// type Frames struct {
-// 	left  leftFrames
-// 	right rightFrames
-// 	// center centerFrames
-// }
-
 type Player struct {
 	frames        map[Orientation]map[PlayerState][]*ebiten.Image
 	currentFrame  int // current frame index
@@ -56,6 +34,8 @@ type Player struct {
 	speed         float64
 	orientation   Orientation
 	state         PlayerState
+	stateTimer    time.Time
+	stateDuration map[PlayerState]time.Duration
 }
 
 // Example function to change player orientation
@@ -68,7 +48,7 @@ func (p *Player) SetOrientation(o Orientation) error {
 	return nil
 }
 
-func (p *Player) setState(s PlayerState) error {
+func (p *Player) SetState(s PlayerState) error {
 	if s > 2 || s < 0 {
 		log.Fatal("Invalid state")
 		return errors.New("Invalid state")
@@ -126,47 +106,13 @@ func NewPlayer(frameFiles []string) (*Player, error) {
 		orientation:   left,
 		state:         idle,
 		speed:         4,
+		stateTimer:    time.Now(),
+		stateDuration: map[PlayerState]time.Duration{
+			idle:  1 * time.Second,        // Duration for idle state
+			kick1: 500 * time.Millisecond, // Duration for kick1 state
+			kick2: 500 * time.Millisecond, // Duration for kick2 state
+		},
 	}, nil
-	// // Load animation frames
-	//
-	// leftKick1, err := assets.LoadImage("../../assets/OldMan-kick-left-1.png")
-	// leftKick2, err := assets.LoadImage("../../assets/OldMan-kick-left-2.png")
-	// rightKick1, err := assets.LoadImage("../../assets/OldMan-kick-right-1.png")
-	// rightKick2, err := assets.LoadImage("../../assets/OldMan-kick-right-2.png")
-	// leftIdle, err := assets.LoadImage("../../assets/OldMan-facing-left.png")
-	// rightIdle, err := assets.LoadImage("../../assets/OldMan-facing-right.png")
-	// if err != nil {
-	// 	return nil, err
-	// }
-	//
-	// leftFrames := leftFrames{
-	// 	idle:  leftIdle,
-	// 	kick1: leftKick1,
-	// 	kick2: leftKick2,
-	// }
-	//
-	// rightFrames := rightFrames{
-	// 	idle:  rightIdle,
-	// 	kick1: rightKick1,
-	// 	kick2: rightKick2,
-	// }
-	//
-	// frames := Frames{
-	// 	left:  leftFrames,
-	// 	right: rightFrames,
-	// }
-	//
-	// return &Player{
-	// 	frames:        frames,
-	// 	currentFrame:  0,
-	// 	frameDuration: 10 * time.Millisecond,
-	// 	lastFrameTime: time.Now(),
-	// 	X:             100,
-	// 	Y:             100,
-	// 	orientation:   left,
-	// 	state:         idle,
-	// 	speed:         4,
-	// }, nil
 }
 
 func (p *Player) Update() {
@@ -189,6 +135,38 @@ func (p *Player) Update() {
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyS) {
 		p.Y += p.speed
+	}
+
+	if ebiten.IsKeyPressed(ebiten.KeySpace) {
+		err := p.SetState(kick1)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	// Handle state transitions based on state timer
+	if time.Since(p.stateTimer) > p.stateDuration[p.state] {
+		switch p.state {
+		case kick1:
+			err := p.SetState(kick2)
+			if err != nil {
+				log.Fatal(err)
+			}
+		case kick2:
+			err := p.SetState(idle)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	}
+
+	// Update animation frame based on time and current state
+	if time.Since(p.lastFrameTime) > p.frameDuration {
+		p.currentFrame++
+		if p.currentFrame >= len(p.frames[p.orientation][p.state]) {
+			p.currentFrame = 0
+		}
+		p.lastFrameTime = time.Now()
 	}
 }
 
