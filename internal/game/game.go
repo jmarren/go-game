@@ -8,20 +8,30 @@ import (
 )
 
 type Game struct {
-	players []*Player
+	players    []*Player
+	background *Background
 }
 
 func NewGame() (*Game, error) {
 	oldManFrames := []string{"OldMan-facing-left.png", "OldMan-facing-right.png", "OldMan-kick-left-1.png", "OldMan-kick-right-1.png"}
 	players := []*Player{}
-
+	// background, err := assets.LoadImage("../../trailer-1.png")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	//
+	background, backgroundErr := NewBackground()
+	if backgroundErr != nil {
+		return nil, backgroundErr
+	}
 	oldMan, err := NewPlayer(oldManFrames)
 	players = append(players, oldMan)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return &Game{
-		players: players,
+		players:    players,
+		background: background,
 	}, nil
 }
 
@@ -37,6 +47,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// clear screen
 	screen.Fill(color.RGBA{255, 255, 255, 255})
 
+	g.background.Draw(screen)
 	// Draw players
 	for _, player := range g.players {
 		player.Draw(screen)

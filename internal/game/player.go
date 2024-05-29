@@ -1,8 +1,6 @@
 package game
 
 import (
-	"errors"
-	"log"
 	"mygame/internal/assets"
 	"time"
 
@@ -42,20 +40,11 @@ type Player struct {
 }
 
 // Example function to change player orientation
-func (p *Player) SetOrientation(o Orientation) error {
-	if o > 2 || o < 0 {
-		log.Fatal("Invalid orientation")
-		return errors.New("Invalid orientation")
-	}
+func (p *Player) SetOrientation(o Orientation) {
 	p.orientation = o
-	return nil
 }
 
 func (p *Player) SetState(s PlayerState) {
-	// if s > 2 || s < 0 {
-	// 	log.Fatal("Invalid state")
-	// 	return errors.New("Invalid state")
-	// }
 	p.state = s
 }
 
@@ -144,34 +133,24 @@ func (p *Player) Update() {
 		}
 		if time.Since(p.stateTimer) > p.stateDuration[jump] {
 			p.SetState(idle)
-			err := p.SetOrientation(left)
-			if err != nil {
-				log.Fatal(err)
-			}
+			p.SetOrientation(left)
 		}
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyD) {
-		err := p.SetOrientation(right)
+		p.SetOrientation(right)
 		p.Walk()
-		if err != nil {
-			log.Fatal(err)
-		}
 		p.X += p.speed
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyA) {
-		err := p.SetOrientation(left)
+		p.SetOrientation(left)
 		p.Walk()
-		if err != nil {
-			log.Fatal(err)
-		}
-
 		p.X -= p.speed
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyW) {
 		p.state = jump
-		p.orientation = center
+		p.SetOrientation(center)
 		p.Y -= p.speed
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyS) {
