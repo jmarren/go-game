@@ -7,37 +7,37 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-type Orientation int
+// type Orientation int
+//
+// const (
+// 	left Orientation = iota
+// 	right
+// 	center
+// )
+//
+// type PlayerState int
+//
+// const (
+// 	idle PlayerState = iota
+// 	kick1
+// 	kick2
+// 	stride1
+// 	stride2
+// 	jump
+// )
 
-const (
-	left Orientation = iota
-	right
-	center
-)
-
-type PlayerState int
-
-const (
-	idle PlayerState = iota
-	kick1
-	kick2
-	stride1
-	stride2
-	jump
-)
-
-type Player struct {
-	frames        map[Orientation]map[PlayerState][]*ebiten.Image
-	currentFrame  int // current frame index
-	frameDuration time.Duration
-	lastFrameTime time.Time
-	X, Y          float64
-	speed         float64
-	orientation   Orientation
-	state         PlayerState
-	stateTimer    time.Time
-	stateDuration map[PlayerState]time.Duration
-}
+// type Player struct {
+// 	frames        map[Orientation]map[PlayerState][]*ebiten.Image
+// 	currentFrame  int // current frame index
+// 	frameDuration time.Duration
+// 	lastFrameTime time.Time
+// 	X, Y          float64
+// 	speed         float64
+// 	orientation   Orientation
+// 	state         PlayerState
+// 	stateTimer    time.Time
+// 	stateDuration map[PlayerState]time.Duration
+// }
 
 // Example function to change player orientation
 func (p *Player) SetOrientation(o Orientation) {

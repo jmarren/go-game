@@ -6,15 +6,16 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-type BackgroundImage struct {
-	Image *ebiten.Image
-	X, Y  float64
-}
+//
+// type BackgroundImage struct {
+// 	Image *ebiten.Image
+// 	X, Y  float64
+// }
 
-type Background struct {
-	images               []*BackgroundImage
-	bgOffsetX, bgOffsetY float64
-}
+// type Background struct {
+// 	images               []*BackgroundImage
+// 	bgOffsetX, bgOffsetY float64
+// }
 
 func NewBackground(images []*BackgroundImage, initialX float64, initialY float64) (*Background, error) {
 	return &Background{
