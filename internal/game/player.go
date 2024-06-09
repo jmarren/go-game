@@ -137,32 +137,6 @@ func (p *Player) Update() {
 		}
 	}
 
-	if ebiten.IsKeyPressed(ebiten.KeyD) {
-		p.SetOrientation(right)
-		p.Walk()
-		// if p.X >= 10 && p.X <= 50 {
-		p.X += p.speed
-		// }
-	}
-
-	if ebiten.IsKeyPressed(ebiten.KeyA) {
-		p.SetOrientation(left)
-		p.Walk()
-		p.X -= p.speed
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyW) {
-		p.state = jump
-		p.SetOrientation(center)
-		p.Y -= p.speed
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyS) {
-		p.Y += p.speed
-	}
-
-	if ebiten.IsKeyPressed(ebiten.KeySpace) {
-		p.SetState(kick1)
-	}
-
 	// Handle state transitions based on state timer
 	if time.Since(p.stateTimer) > p.stateDuration[p.state] {
 		switch p.state {

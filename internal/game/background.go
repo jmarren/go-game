@@ -17,18 +17,6 @@ type Background struct {
 }
 
 func NewBackground(images []*BackgroundImage, initialX float64, initialY float64) (*Background, error) {
-	// images := []*BackgroundImage{}
-
-	// image, err := assets.LoadImage("../../assets/trailer-1.png")
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// images = append(images, &BackgroundImage{
-	// 	Image: image,
-	// 	X:     initialX,
-	// 	Y:     initialY,
-	// })
-
 	return &Background{
 		images:    images,
 		bgOffsetX: initialX,
