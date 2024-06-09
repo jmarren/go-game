@@ -96,8 +96,8 @@ func NewPlayer(frameFiles []string) (*Player, error) {
 		currentFrame:  0,
 		frameDuration: 100 * time.Millisecond,
 		lastFrameTime: time.Now(),
-		X:             100,
-		Y:             100,
+		X:             130,
+		Y:             150,
 		orientation:   left,
 		state:         idle,
 		speed:         4,
@@ -140,7 +140,9 @@ func (p *Player) Update() {
 	if ebiten.IsKeyPressed(ebiten.KeyD) {
 		p.SetOrientation(right)
 		p.Walk()
+		// if p.X >= 10 && p.X <= 50 {
 		p.X += p.speed
+		// }
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyA) {
@@ -186,7 +188,7 @@ func (p *Player) Draw(screen *ebiten.Image) {
 
 	// Draw the current frame of the player
 	opts := &ebiten.DrawImageOptions{}
-	opts.GeoM.Scale(2.0, 2.0)
+	opts.GeoM.Scale(1.0, 1.0)
 	opts.GeoM.Translate(p.X, p.Y)
 	screen.DrawImage(img, opts)
 }

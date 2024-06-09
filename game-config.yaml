@@ -1,0 +1,40 @@
+Game:
+  createImage: func(path, initialPosition) {}
+  title:
+  resolution:
+    width:
+    height:
+  background:
+    functions: 
+      backgroundMove:
+        left:
+        right:
+        up:
+        down:
+    xOffset:
+    yOffset:
+    images:
+      image1:
+        xOffset:
+        yOffset:
+        imagePath:
+      image2:
+        xOffset:
+        yOffset:
+        imagePath:
+  players: 
+    player1:
+      position:
+        x:
+        y:
+      imagePath:
+      speed:
+      scale:
+      controls:
+        moveLeft:
+        moveRight:
+        jump:
+        kickLeft:
+        kickRight:
+
+

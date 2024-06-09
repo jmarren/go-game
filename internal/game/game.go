@@ -12,15 +12,46 @@ type Game struct {
 	background *Background
 }
 
+type Location struct {
+	X float64
+	Y float32
+}
+
+type BackgroundImageInit struct {
+	path     string
+	initialX float64
+	initialY float64
+}
+
 func NewGame() (*Game, error) {
 	oldManFrames := []string{"OldMan-facing-left.png", "OldMan-facing-right.png", "OldMan-kick-left-1.png", "OldMan-kick-right-1.png"}
 	players := []*Player{}
-	// background, err := assets.LoadImage("../../trailer-1.png")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	//
-	background, backgroundErr := NewBackground()
+
+	backgroundInit := []BackgroundImageInit{
+		{
+			path:     "../../assets/tree-1.png",
+			initialX: 30.0,
+			initialY: -30.0,
+		},
+		{
+			path:     "../../assets/trailer-1.png",
+			initialX: 130.0,
+			initialY: 40.0,
+		},
+	}
+
+	backgroundImages := []*BackgroundImage{}
+
+	for _, image := range backgroundInit {
+		image, err := CreateBackgroundImage(image.path, image.initialX, image.initialY)
+		if err != nil {
+			return nil, err
+		}
+		backgroundImages = append(backgroundImages, image)
+
+	}
+
+	background, backgroundErr := NewBackground(backgroundImages, 30, 30)
 	if backgroundErr != nil {
 		return nil, backgroundErr
 	}
