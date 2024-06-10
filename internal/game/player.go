@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	// "github.com/hajimoehoshi/ebiten/v2/inpututil"
 )
 
 type PlayerState int
@@ -70,29 +71,89 @@ func NewPlayer(x, y int, orientation Orientation) *Player {
 }
 
 func (p *Player) UpdateFrame() {
-	// Get the frames for the current state and orientation
-	frames := p.animationFrames[p.state][p.orientation]
-
-	// If the player is not idle, update the frame index based on elapsed time
-	if p.state != Idle {
-		elapsed := time.Since(p.lastFrameTime) // convert to milliseconds
-		if elapsed > p.animationDuration {
-			if p.currentFrameIndex == len(frames)-1 {
-				p.currentFrameIndex = 0
-			} else {
-				p.currentFrameIndex++
-			}
-			p.lastFrameTime = time.Now()
-			p.animationDuration = 200 * time.Millisecond
-		}
-		// If we reach the end of the frames, handle state transition if necessary
-		if p.currentFrameIndex == len(frames)-1 && p.state != Walking {
-			p.state = Idle // Transition to Idle or another state as needed
-			p.currentFrameIndex = 0
-		}
-
-	} else {
-		// Reset to the first frame if idle
-		p.currentFrameIndex = 0
+	switch p.state {
+	case Walking:
+		p.walk()
+	case Jumping:
+		p.jump()
+	case Idle:
+		p.idle()
+	case Kicking:
+		p.kick()
+	default:
+		p.idle()
 	}
 }
+
+func (p *Player) walk() {
+	elapsed := time.Since(p.lastFrameTime)
+	frames := p.animationFrames[Walking][p.orientation]
+
+	if elapsed > p.animationDuration {
+		if p.currentFrameIndex == len(frames)-1 {
+			p.currentFrameIndex = 0
+		} else {
+			p.currentFrameIndex++
+		}
+		p.lastFrameTime = time.Now()
+		p.animationDuration = 200 * time.Millisecond
+	}
+}
+
+func (p *Player) jump() {
+	elapsed := time.Since(p.lastFrameTime)
+
+	if elapsed >= p.animationDuration {
+		p.state = Idle
+		p.currentFrameIndex = 0
+		p.lastFrameTime = time.Now()
+	}
+}
+
+func (p *Player) kick() {
+	elapsed := time.Since(p.lastFrameTime)
+	frames := p.animationFrames[Jumping][p.orientation]
+
+	if elapsed > p.animationDuration {
+		if p.currentFrameIndex == len(frames)-1 {
+			p.currentFrameIndex = 0
+			p.state = Idle
+		} else {
+			p.currentFrameIndex++
+		}
+		// p.lastFrameTime = time.Now()
+		p.animationDuration = 100 * time.Millisecond
+	}
+}
+
+func (p *Player) idle() {
+	p.currentFrameIndex = 0
+}
+
+// func (p *Player) UpdateFrame() {
+// 	// Get the frames for the current state and orientation
+// 	frames := p.animationFrames[p.state][p.orientation]
+//
+// 	// If the player is not idle, update the frame index based on elapsed time
+// 	if p.state != Idle {
+// 		elapsed := time.Since(p.lastFrameTime) // convert to milliseconds
+// 		if elapsed > p.animationDuration {
+// 			if p.currentFrameIndex == len(frames)-1 {
+// 				p.currentFrameIndex = 0
+// 			} else {
+// 				p.currentFrameIndex++
+// 			}
+// 			p.lastFrameTime = time.Now()
+// 			p.animationDuration = 200 * time.Millisecond
+// 		}
+// 		// If we reach the end of the frames, handle state transition if necessary
+// 		if p.currentFrameIndex == len(frames)-1 && p.state != Walking {
+// 			p.state = Idle // Transition to Idle or another state as needed
+// 			p.currentFrameIndex = 0
+// 		}
+//
+// 	} else {
+// 		// Reset to the first frame if idle
+// 		p.currentFrameIndex = 0
+// 	}
+// }
