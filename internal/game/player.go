@@ -1,161 +1,98 @@
 package game
 
-// type Orientation int
-//
-// const (
-// 	left Orientation = iota
-// 	right
-// 	center
-// )
-//
-// type PlayerState int
-//
-// const (
-// 	idle PlayerState = iota
-// 	kick1
-// 	kick2
-// 	stride1
-// 	stride2
-// 	jump
-// )
+import (
+	"mygame/internal/assets"
+	"time"
 
-// type Player struct {
-// 	frames        map[Orientation]map[PlayerState][]*ebiten.Image
-// 	currentFrame  int // current frame index
-// 	frameDuration time.Duration
-// 	lastFrameTime time.Time
-// 	X, Y          float64
-// 	speed         float64
-// 	orientation   Orientation
-// 	state         PlayerState
-// 	stateTimer    time.Time
-// 	stateDuration map[PlayerState]time.Duration
-// }
+	"github.com/hajimehoshi/ebiten/v2"
+)
 
-// Example function to change player orientation
-// func (p *Player) SetOrientation(o Orientation) {
-// 	p.orientation = o
-// }
-//
-// func (p *Player) SetState(s PlayerState) {
-// 	p.state = s
-// }
-//
-// func NewPlayer(frameFiles []string) (*Player, error) {
-// 	frames := make(map[Orientation]map[PlayerState][]*ebiten.Image)
-//
-// 	for _, orientation := range []Orientation{left, right, center} {
-// 		frames[orientation] = make(map[PlayerState][]*ebiten.Image)
-// 		for _, state := range []PlayerState{idle, kick1, kick2} {
-// 			frames[orientation][state] = []*ebiten.Image{}
-// 		}
-// 	}
-//
-// 	// Load images for each state and orientation
-// 	images := map[Orientation]map[PlayerState][]string{
-// 		left: {
-// 			idle:    {"../../assets/OldMan-facing-left.png"},
-// 			kick1:   {"../../assets/OldMan-kick-left-1.png"},
-// 			kick2:   {"../../assets/OldMan-kick-left-2.png"},
-// 			stride1: {"../../assets/OldMan-stride-left-1.png"},
-// 			stride2: {"../../assets/OldMan-stride-left-2.png"},
-// 		},
-// 		right: {
-// 			idle:    {"../../assets/OldMan-facing-right.png"},
-// 			kick1:   {"../../assets/OldMan-kick-right-1.png"},
-// 			kick2:   {"../../assets/OldMan-kick-right-2.png"},
-// 			stride1: {"../../assets/OldMan-stride-right-1.png"},
-// 			stride2: {"../../assets/OldMan-stride-right-2.png"},
-// 		},
-// 		center: {
-// 			jump: {"../../assets/OldMan-center-jump.png"},
-// 		},
-// 	}
-//
-// 	// Load images into frames map
-// 	for orientation, states := range images {
-// 		for state, files := range states {
-// 			for _, file := range files {
-// 				img, err := assets.LoadImage(file)
-// 				if err != nil {
-// 					return nil, err
-// 				}
-// 				frames[orientation][state] = append(frames[orientation][state], img)
-// 			}
-// 		}
-// 	}
-// 	return &Player{
-// 		frames:        frames,
-// 		currentFrame:  0,
-// 		frameDuration: 100 * time.Millisecond,
-// 		lastFrameTime: time.Now(),
-// 		X:             130,
-// 		Y:             150,
-// 		orientation:   left,
-// 		state:         idle,
-// 		speed:         4,
-// 		stateTimer:    time.Now(),
-// 		stateDuration: map[PlayerState]time.Duration{
-// 			idle:    1 * time.Second,        // Duration for idle state
-// 			kick1:   500 * time.Millisecond, // Duration for kick1 state
-// 			kick2:   500 * time.Millisecond, // Duration for kick2 state
-// 			stride1: 100 * time.Millisecond, // Duration for stride1 state
-// 			stride2: 100 * time.Millisecond, // Duration for stride2 state
-// 			jump:    100 * time.Millisecond, // Duration for jump state
-// 		},
-// 	}, nil
-// }
-//
-// func (p *Player) Walk() {
-// 	if p.state == idle || p.state == jump {
-// 		p.stateTimer = time.Now()
-// 		p.SetState(stride1)
-// 	} else if p.state == stride1 && time.Since(p.stateTimer) > p.stateDuration[stride1] {
-// 		p.stateTimer = time.Now()
-// 		p.SetState(stride2)
-// 	} else if p.state == stride2 && time.Since(p.stateTimer) > p.stateDuration[stride1] {
-// 		p.stateTimer = time.Now()
-// 		p.SetState(stride1)
-// 	}
-// }
-//
-// func (p *Player) Update() {
-// 	if p.state == jump {
-// 		if time.Since(p.stateTimer) > p.stateDuration[jump]/2 {
-// 			p.Y += p.speed
-// 		}
-// 		if time.Since(p.stateTimer) > p.stateDuration[jump] {
-// 			p.SetState(idle)
-// 			p.SetOrientation(left)
-// 		}
-// 	}
-//
-// 	// Handle state transitions based on state timer
-// 	if time.Since(p.stateTimer) > p.stateDuration[p.state] {
-// 		switch p.state {
-// 		case kick1:
-// 			p.SetState(kick2)
-// 		case kick2:
-// 			p.SetState(idle)
-// 		}
-// 	}
-//
-// 	// Update animation frame based on time and current state
-// 	if time.Since(p.lastFrameTime) > p.frameDuration {
-// 		p.currentFrame++
-// 		if p.currentFrame >= len(p.frames[p.orientation][p.state]) {
-// 			p.currentFrame = 0
-// 		}
-// 		p.lastFrameTime = time.Now()
-// 	}
-// }
-//
-// func (p *Player) Draw(screen *ebiten.Image) {
-// 	img := p.frames[p.orientation][p.state][p.currentFrame]
-//
-// 	// Draw the current frame of the player
-// 	opts := &ebiten.DrawImageOptions{}
-// 	opts.GeoM.Scale(1.0, 1.0)
-// 	opts.GeoM.Translate(p.X, p.Y)
-// 	screen.DrawImage(img, opts)
-// }
+type PlayerState int
+
+const (
+	Idle PlayerState = iota
+	Walking
+	Kicking
+	Jumping
+)
+
+type Orientation int
+
+const (
+	Right Orientation = iota
+	Left
+	Center
+)
+
+type Player struct {
+	x, y              float64
+	state             PlayerState
+	animationFrames   map[PlayerState]map[Orientation][]*ebiten.Image
+	animationDuration time.Duration
+	lastFrameTime     time.Time
+	currentFrameIndex int
+	orientation       Orientation
+	speed             float64
+}
+
+func NewPlayer(x, y int, orientation Orientation) *Player {
+	// Load all frames and organize them by state and orientation
+	frames := map[PlayerState]map[Orientation][]*ebiten.Image{
+		Walking: {
+			Right: assets.LoadFrames([]string{"OldMan-stride-right-1.png", "OldMan-stride-right-2.png"}),
+			Left:  assets.LoadFrames([]string{"OldMan-stride-left-1.png", "OldMan-stride-left-2.png"}),
+		},
+		Kicking: {
+			Right: assets.LoadFrames([]string{"OldMan-kick-right-1.png", "OldMan-kick-right-2.png"}),
+			Left:  assets.LoadFrames([]string{"OldMan-kick-left-1.png", "OldMan-kick-left-2.png"}),
+		},
+		Jumping: {
+			Right:  assets.LoadFrames([]string{"OldMan-center-jump.png"}),
+			Left:   assets.LoadFrames([]string{"OldMan-center-jump.png"}),
+			Center: assets.LoadFrames([]string{"OldMan-center-jump.png"}),
+		},
+		Idle: {
+			Right: assets.LoadFrames([]string{"OldMan-facing-right.png"}),
+			Left:  assets.LoadFrames([]string{"OldMan-facing-left.png"}),
+		},
+		// Add more states and orientations as needed
+	}
+
+	return &Player{
+		x:                 float64(x),
+		y:                 float64(y),
+		state:             Idle,
+		orientation:       orientation,
+		animationFrames:   frames,
+		currentFrameIndex: 0,
+		speed:             2.0,
+	}
+}
+
+func (p *Player) UpdateFrame() {
+	// Get the frames for the current state and orientation
+	frames := p.animationFrames[p.state][p.orientation]
+
+	// If the player is not idle, update the frame index based on elapsed time
+	if p.state != Idle {
+		elapsed := time.Since(p.lastFrameTime) // convert to milliseconds
+		if elapsed > p.animationDuration {
+			if p.currentFrameIndex == len(frames)-1 {
+				p.currentFrameIndex = 0
+			} else {
+				p.currentFrameIndex++
+			}
+			p.lastFrameTime = time.Now()
+			p.animationDuration = 200 * time.Millisecond
+		}
+		// If we reach the end of the frames, handle state transition if necessary
+		if p.currentFrameIndex == len(frames)-1 && p.state != Walking {
+			p.state = Idle // Transition to Idle or another state as needed
+			p.currentFrameIndex = 0
+		}
+
+	} else {
+		// Reset to the first frame if idle
+		p.currentFrameIndex = 0
+	}
+}

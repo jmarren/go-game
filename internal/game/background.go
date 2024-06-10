@@ -1,47 +1,44 @@
 package game
 
-//
-// type BackgroundImage struct {
-// 	Image *ebiten.Image
-// 	X, Y  float64
-// }
+import (
+	"mygame/internal/assets"
 
-// type Background struct {
-// 	images               []*BackgroundImage
-// 	bgOffsetX, bgOffsetY float64
-// }
+	"github.com/hajimehoshi/ebiten/v2"
+)
 
-// func NewBackground(images []*BackgroundImage, initialX float64, initialY float64) (*Background, error) {
-// 	return &Background{
-// 		images:    images,
-// 		bgOffsetX: initialX,
-// 		bgOffsetY: initialY,
-// 	}, nil
-// }
-//
-// func (b *Background) Draw(screen *ebiten.Image) {
-// 	for _, img := range b.images {
-// 		// Draw the current frame of the background
-// 		opts := &ebiten.DrawImageOptions{}
-// 		opts.GeoM.Scale(2.0, 2.0)
-// 		opts.GeoM.Translate(b.bgOffsetX+img.X, b.bgOffsetY+img.Y)
-// 		screen.DrawImage(img.Image, opts)
-// 	}
-// }
-//
-// func CreateBackgroundImage(path string, initialX float64, initialY float64) (*BackgroundImage, error) {
-// 	image, loadErr := assets.LoadImage(path)
-// 	if loadErr != nil {
-// 		return nil, loadErr
-// 	}
-// 	return &BackgroundImage{
-// 		Image: image,
-// 		X:     initialX,
-// 		Y:     initialY,
-// 	}, nil
-// }
-//
-// func (b *Background) MoveBackground(deltaX float64, deltaY float64) {
-// 	b.bgOffsetX += deltaX
-// 	b.bgOffsetY += deltaY
-// }
+type Background struct {
+	objects []*BackgroundObject
+	xOffset float64
+	yOffset float64
+}
+
+type BackgroundObject struct {
+	x     float64
+	y     float64
+	image *ebiten.Image
+	scale float64
+}
+
+type BackgroundConfig struct {
+	path     string
+	initialX float64
+	initialY float64
+	scale    float64
+}
+
+func NewBackground(backgroundConfigs []BackgroundConfig, xOffset float64, yOffset float64) *Background {
+	background := Background{}
+	for _, config := range backgroundConfigs {
+		img, _ := assets.LoadImage(config.path)
+		backgroundObject := BackgroundObject{
+			x:     config.initialX,
+			y:     config.initialY,
+			image: img,
+			scale: config.scale,
+		}
+		background.objects = append(background.objects, &backgroundObject)
+	}
+	background.xOffset = xOffset
+	background.yOffset = yOffset
+	return &background
+}
