@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/colorm"
 )
 
 // "github.com/hajimehoshi/ebiten/inpututil"
@@ -15,7 +14,6 @@ type Game struct {
 	player     *Player
 	background *Background
 	keyActions []*KeyAction
-	bgColor    colorm.ColorM
 }
 
 type PlayerState int
@@ -38,9 +36,9 @@ const (
 type Player struct {
 	x, y              float64
 	state             PlayerState
-	stateTimer        time.Time
 	animationFrames   map[PlayerState]map[Orientation][]*ebiten.Image
 	animationDuration time.Duration
+	lastFrameTime     time.Time
 	currentFrameIndex int
 	orientation       Orientation
 	speed             float64
@@ -106,7 +104,7 @@ func NewPlayer(x, y int, orientation Orientation) *Player {
 		state:             Idle,
 		orientation:       orientation,
 		animationFrames:   frames,
-		animationDuration: 100 * time.Millisecond,
+		currentFrameIndex: 0,
 		speed:             2.0,
 	}
 }
@@ -134,20 +132,21 @@ func NewKeyActions(player *Player, background *Background) []*KeyAction {
 			key: ebiten.KeyW,
 			callback: func(p *Player, b *Background) {
 				p.state = Jumping
-				p.currentFrameIndex = 0
+				// p.animationDuration = 200 * time.Millisecond
 			},
 		},
 		{
 			key: ebiten.KeyA,
 			callback: func(p *Player, b *Background) {
+				p.state = Walking
+				p.orientation = Left
+				// p.frameDuration = 100 * time.Millisecond
+				// p.animationDuration = 200 * time.Millisecond
 				if p.x <= 10 {
 					b.xOffset += p.speed
 				} else {
 					p.x -= p.speed
 				}
-				p.state = Walking
-				p.orientation = Left
-				p.currentFrameIndex = 0
 			},
 		},
 		{
@@ -155,7 +154,9 @@ func NewKeyActions(player *Player, background *Background) []*KeyAction {
 			callback: func(p *Player, b *Background) {
 				p.state = Walking
 				p.orientation = Right
-				p.currentFrameIndex = 0
+				// p.currentFrameIndex = 0
+				// p.frameDuration = 100 * time.Millisecond
+				// p.animationDuration = 200 * time.Millisecond
 				if p.x >= 120 {
 					b.xOffset -= p.speed
 				} else {
@@ -167,7 +168,9 @@ func NewKeyActions(player *Player, background *Background) []*KeyAction {
 			key: ebiten.KeySpace,
 			callback: func(p *Player, b *Background) {
 				p.state = Kicking
-				p.currentFrameIndex = 0
+				// p.currentFrameIndex = 0
+				// p.frameDuration = 200 * time.Millisecond
+				// p.animationDuration = 200 * time.Millisecond
 			},
 		},
 	}
@@ -199,7 +202,7 @@ func NewGame() (*Game, error) {
 		},
 		{
 			path:     "../../assets/trailer-1.png",
-			initialX: 75.0,
+			initialX: 25.0,
 			initialY: 40.0,
 			scale:    2.0,
 		},
@@ -212,24 +215,61 @@ func NewGame() (*Game, error) {
 	return &g, nil
 }
 
-// Update method for Game struct
 func (g *Game) Update() error {
+	// Call player's update function to manage frame updates
+
+	g.player.UpdateFrame()
+
+	keyPressed := false
+
+	// Handle input and other game logic
 	for _, keyAction := range g.keyActions {
 		if ebiten.IsKeyPressed(keyAction.key) {
 			keyAction.callback(g.player, g.background)
-			// Handle frame update
-			if time.Since(g.player.stateTimer) > g.player.animationDuration {
-				frames := g.player.animationFrames[g.player.state][g.player.orientation]
-				g.player.currentFrameIndex = (g.player.currentFrameIndex + 1) % len(frames)
-				g.player.stateTimer = time.Now()
-			}
-		} else if time.Since(g.player.stateTimer) > g.player.animationDuration {
-			g.player.state = Idle
-			g.player.currentFrameIndex = 0
-			g.player.stateTimer = time.Time{}
+			keyPressed = true
 		}
 	}
+
+	if !keyPressed {
+		g.player.state = Idle
+		g.player.currentFrameIndex = 0
+	}
+
 	return nil
+}
+
+func (p *Player) UpdateFrame() {
+	// Get the frames for the current state and orientation
+	frames := p.animationFrames[p.state][p.orientation]
+	//
+	// if p.state == Walking {
+	// 	fmt.Printf("\nFrame Index: %d \nLast Frame Time: %s\nElapsed Time: %s\nAnimation Duration: %s\nElapsed > Animation Duration ?: %t", p.currentFrameIndex, p.lastFrameTime, time.Since(p.lastFrameTime), p.animationDuration, time.Since(p.lastFrameTime) > p.animationDuration)
+	// }
+
+	// If the player is not idle, update the frame index based on elapsed time
+	if p.state != Idle {
+		// now := time.Now()
+		elapsed := time.Since(p.lastFrameTime) // convert to milliseconds
+		if elapsed > p.animationDuration {
+			// p.currentFrameIndex = (p.currentFrameIndex + 1) % len(frames)
+			if p.currentFrameIndex == len(frames)-1 {
+				p.currentFrameIndex = 0
+			} else {
+				p.currentFrameIndex++
+			}
+			p.lastFrameTime = time.Now()
+			p.animationDuration = 200 * time.Millisecond
+		}
+		// If we reach the end of the frames, handle state transition if necessary
+		if p.currentFrameIndex == len(frames)-1 && p.state != Walking {
+			p.state = Idle // Transition to Idle or another state as needed
+			p.currentFrameIndex = 0
+		}
+
+	} else {
+		// Reset to the first frame if idle
+		p.currentFrameIndex = 0
+	}
 }
 
 // Draw method for Game struct
