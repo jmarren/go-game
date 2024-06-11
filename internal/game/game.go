@@ -116,7 +116,7 @@ func (g *Game) Update() error {
 		}
 	}
 
-	if !keyPressed {
+	if !keyPressed && g.player.state != Jumping {
 		g.player.state = Idle
 		g.player.currentFrameIndex = 0
 		g.player.isJumpEnabled = true
