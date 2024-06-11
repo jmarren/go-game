@@ -1,7 +1,6 @@
 package game
 
 import (
-	"fmt"
 	"mygame/internal/assets"
 	"time"
 
@@ -105,11 +104,11 @@ func (p *Player) walk() {
 
 func (p *Player) jump() {
 	elapsed := time.Since(p.lastFrameTime)
-	fmt.Println("\nelapsed: ", elapsed, "\nanimationDuration: ", p.animationDuration, "\ncurrentFrameIndex: ", p.currentFrameIndex, "\nstate: ", p.state)
+	// fmt.Println("\nelapsed: ", elapsed, "\nanimationDuration: ", p.animationDuration, "\ncurrentFrameIndex: ", p.currentFrameIndex, "\nstate: ", p.state)
 
-	if elapsed < 250*time.Millisecond {
+	if elapsed < 125*time.Millisecond {
 		p.y -= p.speed
-	} else if elapsed < 500*time.Millisecond {
+	} else if elapsed < 250*time.Millisecond {
 		p.y += p.speed
 	} else if elapsed >= p.animationDuration {
 		p.isJumpEnabled = false

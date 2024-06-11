@@ -27,7 +27,7 @@ func NewKeyActions(player *Player, background *Background) []*KeyAction {
 				if p.isJumpEnabled { // Only allow jumping if the player is on the ground
 					p.state = Jumping
 					p.isJumpEnabled = false
-					p.animationDuration = 500 * time.Millisecond
+					p.animationDuration = 250 * time.Millisecond
 					p.lastFrameTime = time.Now()
 				}
 			},
