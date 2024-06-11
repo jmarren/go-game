@@ -4,18 +4,19 @@ import (
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	// "github.com/hajimoehoshi/ebiten/v2/inpututil"
 )
 
 type Game struct {
 	player     *Player
 	background *Background
 	keyActions []*KeyAction
+	keyStates  map[ebiten.Key]bool
 }
 
 type KeyAction struct {
 	key      ebiten.Key
 	callback func(*Player, *Background)
+	loop     bool
 }
 
 func NewKeyActions(player *Player, background *Background) []*KeyAction {
@@ -23,14 +24,14 @@ func NewKeyActions(player *Player, background *Background) []*KeyAction {
 		{
 			key: ebiten.KeyW,
 			callback: func(p *Player, b *Background) {
-				p.state = Jumping
-				elapsed := time.Since(p.lastFrameTime)
-				if elapsed < p.animationDuration/2 {
-					p.y += p.speed
-				} else {
-					p.y -= p.speed
+				if p.isJumpEnabled { // Only allow jumping if the player is on the ground
+					p.state = Jumping
+					p.isJumpEnabled = false
+					p.animationDuration = 500 * time.Millisecond
+					p.lastFrameTime = time.Now()
 				}
 			},
+			loop: false,
 		},
 		{
 			key: ebiten.KeyA,
@@ -43,6 +44,7 @@ func NewKeyActions(player *Player, background *Background) []*KeyAction {
 					p.x -= p.speed
 				}
 			},
+			loop: true,
 		},
 		{
 			key: ebiten.KeyD,
@@ -55,12 +57,14 @@ func NewKeyActions(player *Player, background *Background) []*KeyAction {
 					p.x += p.speed
 				}
 			},
+			loop: true,
 		},
 		{
 			key: ebiten.KeySpace,
 			callback: func(p *Player, b *Background) {
 				p.state = Kicking
 			},
+			loop: false,
 		},
 	}
 }
@@ -68,7 +72,6 @@ func NewKeyActions(player *Player, background *Background) []*KeyAction {
 func NewGame() (*Game, error) {
 	g := Game{}
 	player := NewPlayer(0, 160.0, Right)
-	g.player = player
 
 	backgroundConfig := []BackgroundConfig{
 		{
@@ -85,11 +88,16 @@ func NewGame() (*Game, error) {
 		},
 	}
 
-	g.background = NewBackground(backgroundConfig, 0.0, 0.0)
+	background := NewBackground(backgroundConfig, 0.0, 0.0)
 
-	g.keyActions = NewKeyActions(g.player, g.background)
+	keyActions := NewKeyActions(g.player, g.background)
 
-	return &g, nil
+	return &Game{
+		player:     player,
+		background: background,
+		keyActions: keyActions,
+		keyStates:  make(map[ebiten.Key]bool),
+	}, nil
 }
 
 func (g *Game) Update() error {
@@ -101,7 +109,9 @@ func (g *Game) Update() error {
 
 	for _, keyAction := range g.keyActions {
 		if ebiten.IsKeyPressed(keyAction.key) {
-			keyAction.callback(g.player, g.background)
+			if !g.keyStates[keyAction.key] || keyAction.loop {
+				keyAction.callback(g.player, g.background)
+			}
 			keyPressed = true
 		}
 	}
@@ -109,6 +119,7 @@ func (g *Game) Update() error {
 	if !keyPressed {
 		g.player.state = Idle
 		g.player.currentFrameIndex = 0
+		g.player.isJumpEnabled = true
 	}
 
 	return nil

@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"mygame/internal/assets"
 	"time"
 
@@ -34,6 +35,7 @@ type Player struct {
 	currentFrameIndex int
 	orientation       Orientation
 	speed             float64
+	isJumpEnabled     bool
 }
 
 func NewPlayer(x, y int, orientation Orientation) *Player {
@@ -67,6 +69,7 @@ func NewPlayer(x, y int, orientation Orientation) *Player {
 		animationFrames:   frames,
 		currentFrameIndex: 0,
 		speed:             2.0,
+		isJumpEnabled:     true,
 	}
 }
 
@@ -102,8 +105,14 @@ func (p *Player) walk() {
 
 func (p *Player) jump() {
 	elapsed := time.Since(p.lastFrameTime)
+	fmt.Println("\nelapsed: ", elapsed, "\nanimationDuration: ", p.animationDuration, "\ncurrentFrameIndex: ", p.currentFrameIndex, "\nstate: ", p.state)
 
-	if elapsed >= p.animationDuration {
+	if elapsed < 250*time.Millisecond {
+		p.y -= p.speed
+	} else if elapsed < 500*time.Millisecond {
+		p.y += p.speed
+	} else if elapsed >= p.animationDuration {
+		p.isJumpEnabled = false
 		p.state = Idle
 		p.currentFrameIndex = 0
 		p.lastFrameTime = time.Now()
@@ -129,31 +138,3 @@ func (p *Player) kick() {
 func (p *Player) idle() {
 	p.currentFrameIndex = 0
 }
-
-// func (p *Player) UpdateFrame() {
-// 	// Get the frames for the current state and orientation
-// 	frames := p.animationFrames[p.state][p.orientation]
-//
-// 	// If the player is not idle, update the frame index based on elapsed time
-// 	if p.state != Idle {
-// 		elapsed := time.Since(p.lastFrameTime) // convert to milliseconds
-// 		if elapsed > p.animationDuration {
-// 			if p.currentFrameIndex == len(frames)-1 {
-// 				p.currentFrameIndex = 0
-// 			} else {
-// 				p.currentFrameIndex++
-// 			}
-// 			p.lastFrameTime = time.Now()
-// 			p.animationDuration = 200 * time.Millisecond
-// 		}
-// 		// If we reach the end of the frames, handle state transition if necessary
-// 		if p.currentFrameIndex == len(frames)-1 && p.state != Walking {
-// 			p.state = Idle // Transition to Idle or another state as needed
-// 			p.currentFrameIndex = 0
-// 		}
-//
-// 	} else {
-// 		// Reset to the first frame if idle
-// 		p.currentFrameIndex = 0
-// 	}
-// }
